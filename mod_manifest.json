@@ -1,0 +1,9 @@
+{
+  "id": "ItemLegacy",
+  "name": "Item Legacy",
+  "author": "Codex",
+  "description": "在休息点新增一个遗产入口，可从上一局结束时保留的卡牌、药水、遗物中各选一个获得。",
+  "version": "0.1.0",
+  "has_pck": false,
+  "has_dll": true
+}

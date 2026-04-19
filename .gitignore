@@ -1,0 +1,21 @@
+# Godot 4+ 本地生成缓存
+.godot/
+
+# Godot Android 导出生成目录
+/android/
+
+# .NET / C# 构建产物
+bin/
+obj/
+
+# IDE / 编辑器本地配置
+.vs/
+.vscode/
+.idea/
+
+# 系统临时文件
+*.tmp
+*.temp
+*.log
+Thumbs.db
+Desktop.ini
