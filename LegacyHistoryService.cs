@@ -146,7 +146,8 @@ public static class LegacyHistoryService
     private static List<SerializableCard> DistinctCards(IEnumerable<SerializableCard> cards)
     {
         return cards
-            .Distinct()
+            .GroupBy(static card => card.Id)
+            .Select(static group => group.First())
             .ToList();
     }
 

@@ -60,6 +60,7 @@
 - 2026-04-19：已确认原版 `RewardsSet.WithCustomRewards(...).Offer()` 可直接复用原版奖励页。
 - 2026-04-19：已确认 `RelicReward`、`PotionReward` 支持传入指定模型，适合直接承载上一局遗物/药水选择。
 - 2026-04-19：已确认直接复用 `SpecialCardReward` 会让未选中的历史卡牌提前进入当前 `RunState`；当前版本已改为自定义 `LegacyCardReward`，只在真正领取时注册卡牌。
+- 2026-04-24：卡牌遗产已改为只按上一局历史中的卡牌 `Id` 继承基础版卡牌，不再继承升级等级和附魔状态；同名卡候选也改为按 `Id` 去重。
 - 2026-04-19：已验证 `dotnet build C:\Dev\sts2mod\item-legacy\ItemLegacy.csproj` 可成功构建，输出 DLL 为 `C:\Dev\sts2mod\item-legacy\.godot\mono\temp\bin\Debug\ItemLegacy.dll`。
 - 2026-04-19：已改为使用 `LinkedRewardSet` 承载三类遗产，当前实现为“卡牌三选一 / 药水三选一 / 遗物三选一”，不再错误地把整组奖励全部领走。
 - 2026-04-19：药水遗产阶段已改为复用原版 `PotionReward`，当前药水栏已满时不会自动跳过，但该阶段允许玩家按原版奖励页逻辑直接跳过，不额外弹出替换药水选择。
