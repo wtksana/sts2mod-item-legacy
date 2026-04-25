@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using MegaCrit.Sts2.Core.Context;
 using MegaCrit.Sts2.Core.Entities.Players;
+using MegaCrit.Sts2.Core.Entities.Relics;
 using MegaCrit.Sts2.Core.Hooks;
 using MegaCrit.Sts2.Core.Logging;
 using MegaCrit.Sts2.Core.Models;
@@ -194,7 +195,7 @@ public static class LegacyHistoryService
     private static bool IsAvailableLegacyRelic(Player player, SerializableRelic relic)
     {
         RelicModel model = RelicModel.FromSerializable(relic);
-        return model.IsAllowed(player.RunState);
+        return IsLegacyRelicRarity(model) && model.IsAllowed(player.RunState);
     }
 
     private static List<SerializableCard> DistinctCards(IEnumerable<SerializableCard> cards)
@@ -219,6 +220,14 @@ public static class LegacyHistoryService
             .GroupBy(static relic => relic.Id)
             .Select(static group => group.First())
             .ToList();
+    }
+
+    private static bool IsLegacyRelicRarity(RelicModel relic)
+    {
+        return relic.Rarity is RelicRarity.Common
+            or RelicRarity.Uncommon
+            or RelicRarity.Rare
+            or RelicRarity.Shop;
     }
 
     private static bool TryLoadLatestHistory(Player currentPlayer, out RunHistoryPlayer? historyPlayer)
