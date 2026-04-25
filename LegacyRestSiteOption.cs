@@ -13,8 +13,6 @@ public sealed class LegacyRestSiteOption : RestSiteOption
 
     public const string FallbackIconPath = "res://images/ui/rest_site/option_smith.png";
 
-    private readonly LegacyHistoryService.OfferPlan? _offerPlan;
-
     public override string OptionId => LegacyOptionId;
 
     public override LocString Description => new("rest_site_ui", "PROMPT");
@@ -24,27 +22,13 @@ public sealed class LegacyRestSiteOption : RestSiteOption
     public LegacyRestSiteOption(Player owner)
         : base(owner)
     {
-        if (LegacyHistoryService.TryCreateOfferPlan(owner, out LegacyHistoryService.OfferPlan? plan, out string disabledReason) && plan != null)
-        {
-            _offerPlan = plan;
-            DisplayDescription = plan.DescriptionText;
-            IsEnabled = true;
-        }
-        else
-        {
-            _offerPlan = null;
-            DisplayDescription = disabledReason;
-            IsEnabled = false;
-        }
+        LegacyHistoryService.TryGetOptionState(owner, out bool isEnabled, out string descriptionText);
+        IsEnabled = isEnabled;
+        DisplayDescription = descriptionText;
     }
 
     public override async Task<bool> OnSelect()
     {
-        if (_offerPlan == null)
-        {
-            return false;
-        }
-
-        return await LegacyHistoryService.OfferAsync(Owner, _offerPlan);
+        return await LegacyHistoryService.OfferForSelectionAsync(Owner);
     }
 }

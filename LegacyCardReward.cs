@@ -12,7 +12,6 @@ using MegaCrit.Sts2.Core.Models;
 using MegaCrit.Sts2.Core.Rewards;
 using MegaCrit.Sts2.Core.Runs;
 using MegaCrit.Sts2.Core.Runs.History;
-using MegaCrit.Sts2.Core.Saves;
 using MegaCrit.Sts2.Core.Saves.Runs;
 
 namespace ItemLegacy;
@@ -53,7 +52,7 @@ public sealed class LegacyCardReward : Reward
             throw new System.InvalidOperationException("Legacy card reward received a card without Id.");
         }
 
-        _card = SaveUtil.CardOrDeprecated(save.Id).ToMutable();
+        _card = CardModel.FromSerializable(save);
     }
 
     public override Task Populate()

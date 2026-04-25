@@ -60,7 +60,7 @@
 - 2026-04-19：已确认原版 `RewardsSet.WithCustomRewards(...).Offer()` 可直接复用原版奖励页。
 - 2026-04-19：已确认 `RelicReward`、`PotionReward` 支持传入指定模型，适合直接承载上一局遗物/药水选择。
 - 2026-04-19：已确认直接复用 `SpecialCardReward` 会让未选中的历史卡牌提前进入当前 `RunState`；当前版本已改为自定义 `LegacyCardReward`，只在真正领取时注册卡牌。
-- 2026-04-24：卡牌遗产已改为只按上一局历史中的卡牌 `Id` 继承基础版卡牌，不再继承升级等级和附魔状态；同名卡候选也改为按 `Id` 去重。
+- 2026-04-25：卡牌遗产已改为按上一局历史中的完整 `SerializableCard` 继承，保留升级等级和附魔状态；同名卡候选仍按 `Id` 去重。
 - 2026-04-19：已验证 `dotnet build C:\Dev\sts2mod\item-legacy\ItemLegacy.csproj` 可成功构建，输出 DLL 为 `C:\Dev\sts2mod\item-legacy\.godot\mono\temp\bin\Debug\ItemLegacy.dll`。
 - 2026-04-19：已改为使用 `LinkedRewardSet` 承载三类遗产，当前实现为“卡牌三选一 / 药水三选一 / 遗物三选一”，不再错误地把整组奖励全部领走。
 - 2026-04-19：药水遗产阶段已改为复用原版 `PotionReward`，当前药水栏已满时不会自动跳过，但该阶段允许玩家按原版奖励页逻辑直接跳过，不额外弹出替换药水选择。
@@ -70,7 +70,8 @@
 - 2026-04-19：实测发现原版 `NLinkedRewardSet` 在当前环境下没有按预期在领取后立即收起整组；当前版本已用 Harmony 接管其 `Reload` 中的子按钮回调，确保“每类最多拿一个”在选中任意一项后立即关闭本组。
 - 2026-04-19：当某类遗产去重后只剩 1 个选项时，当前版本不再使用 `LinkedRewardSet`，直接用普通奖励页展示该单项。
 - 2026-04-19：已确认休息处选项是否会消耗本次休息处，取决于 `RestSiteOption.OnSelect()` 是否返回 `true`；当前版本已将“完成遗产流程”与“实际拿到物品”解耦，只要进入遗产流程并正常结束，即视为本次休息处已消费，并由原版 `RestSiteChoices` 记录“本局已领取遗产”状态。
-- 2026-04-19：遗物遗产已增加稀有度筛选，只允许继承 `Common`、`Uncommon`、`Rare`、`Shop` 四类遗物，排除初始、远古、事件和无稀有度遗物。
+- 2026-04-25：遗物遗产已放开稀有度筛选，上一局历史中的所有种类遗物都可作为候选；仍保留 `RelicModel.IsAllowed(...)` 作为游戏自身可用性判断。
+- 2026-04-25：多人局遗产流程已改为“仅本地玩家客户端生成自己的遗产候选，并继续复用原版 `RewardSynchronizer` 同步领取/跳过结果”；非本地玩家对应的 `LegacyRestSiteOption` 不再读取本机历史记录，避免把别人的遗产候选错误地按本机历史重算。
 
 ## 限制/坑点
 
@@ -79,6 +80,7 @@
 - 2026-04-19：当前构建依赖读取 `C:\Users\ttat\AppData\Roaming\NuGet\NuGet.Config`；在本工作区内直接执行 `dotnet build` 可能因权限不足失败，需要提权运行。
 - 2026-04-19：为了与原版休息/锻造语义一致，遗产流程即使三段都 `Skip`，也必须返回成功；否则 `RestSiteSynchronizer` 不会清空后续休息处选项，也不会把本局遗产写入原版 `RestSiteChoices`。
 - 2026-04-19：如果把“遗产已领取”额外写到独立文件，会出现休息处内 SL 后“奖励回档但遗产锁定未回档”的状态撕裂；当前版本已移除这条实现路线。
+- 2026-04-25：原版联机会在入房阶段校验 `ModManager.GetGameplayRelevantModNameList()`；`item-legacy` 当前 `affects_gameplay=true`，因此“有人装 mod、有人没装 mod”正常情况下会直接触发 `ModMismatch`，不能作为兼容目标。
 
 ## 命令
 

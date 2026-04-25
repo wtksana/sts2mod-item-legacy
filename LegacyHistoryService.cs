@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using MegaCrit.Sts2.Core.Context;
 using MegaCrit.Sts2.Core.Entities.Players;
-using MegaCrit.Sts2.Core.Entities.Relics;
 using MegaCrit.Sts2.Core.Hooks;
 using MegaCrit.Sts2.Core.Logging;
 using MegaCrit.Sts2.Core.Models;
@@ -18,6 +18,8 @@ namespace ItemLegacy;
 
 public static class LegacyHistoryService
 {
+    private const string RemoteMultiplayerDescription = "多人局中仅由该玩家本地客户端根据其自己的上一局历史生成遗产，获得结果继续复用原版多人奖励同步。";
+
     public sealed class OfferPlan
     {
         public required IReadOnlyList<SerializableCard> Cards { get; init; }
@@ -29,16 +31,58 @@ public static class LegacyHistoryService
         public required string DescriptionText { get; init; }
     }
 
-    public static bool TryCreateOfferPlan(Player player, out OfferPlan? plan, out string disabledReason)
+    public static bool TryGetOptionState(Player player, out bool isEnabled, out string descriptionText)
+    {
+        if (LegacyRunClaimTracker.HasClaimedCurrentRun(player))
+        {
+            isEnabled = false;
+            descriptionText = "本局已经领取过遗产。";
+            return false;
+        }
+
+        if (!ShouldResolvePlanLocally(player))
+        {
+            isEnabled = true;
+            descriptionText = RemoteMultiplayerDescription;
+            return true;
+        }
+
+        if (TryCreateOfferPlanInternal(player, out OfferPlan? plan, out string disabledReason) && plan != null)
+        {
+            isEnabled = true;
+            descriptionText = plan.DescriptionText;
+            return true;
+        }
+
+        isEnabled = false;
+        descriptionText = disabledReason;
+        return false;
+    }
+
+    public static async Task<bool> OfferForSelectionAsync(Player player)
+    {
+        if (LegacyRunClaimTracker.HasClaimedCurrentRun(player))
+        {
+            return false;
+        }
+
+        if (!ShouldResolvePlanLocally(player))
+        {
+            return true;
+        }
+
+        if (!TryCreateOfferPlanInternal(player, out OfferPlan? plan, out _) || plan == null)
+        {
+            return false;
+        }
+
+        return await OfferAsync(player, plan);
+    }
+
+    private static bool TryCreateOfferPlanInternal(Player player, out OfferPlan? plan, out string disabledReason)
     {
         plan = null;
         disabledReason = "没有可用的上一局历史记录。";
-
-        if (LegacyRunClaimTracker.HasClaimedCurrentRun(player))
-        {
-            disabledReason = "本局已经领取过遗产。";
-            return false;
-        }
 
         if (!TryLoadLatestHistory(player, out RunHistoryPlayer? historyPlayer) || historyPlayer == null)
         {
@@ -68,6 +112,16 @@ public static class LegacyHistoryService
         };
         disabledReason = string.Empty;
         return true;
+    }
+
+    private static bool ShouldResolvePlanLocally(Player player)
+    {
+        if (RunManager.Instance.IsSinglePlayerOrFakeMultiplayer)
+        {
+            return true;
+        }
+
+        return LocalContext.IsMe(player);
     }
 
     public static async Task<bool> OfferAsync(Player player, OfferPlan plan)
@@ -140,7 +194,7 @@ public static class LegacyHistoryService
     private static bool IsAvailableLegacyRelic(Player player, SerializableRelic relic)
     {
         RelicModel model = RelicModel.FromSerializable(relic);
-        return IsLegacyRelicRarity(model) && model.IsAllowed(player.RunState);
+        return model.IsAllowed(player.RunState);
     }
 
     private static List<SerializableCard> DistinctCards(IEnumerable<SerializableCard> cards)
@@ -165,14 +219,6 @@ public static class LegacyHistoryService
             .GroupBy(static relic => relic.Id)
             .Select(static group => group.First())
             .ToList();
-    }
-
-    private static bool IsLegacyRelicRarity(RelicModel relic)
-    {
-        return relic.Rarity is RelicRarity.Common
-            or RelicRarity.Uncommon
-            or RelicRarity.Rare
-            or RelicRarity.Shop;
     }
 
     private static bool TryLoadLatestHistory(Player currentPlayer, out RunHistoryPlayer? historyPlayer)
