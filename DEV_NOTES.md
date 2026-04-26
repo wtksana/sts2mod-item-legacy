@@ -13,7 +13,7 @@
 玩家点击后：
 
 - 从上一局游戏结束时保留的卡牌中选 1 张获得
-- 从上一局游戏结束时保留的药水中选 1 瓶获得
+- 从上一局游戏结束时保留的全部药水中逐个领取，可按原版奖励页逻辑跳过
 - 从上一局游戏结束时保留的遗物中选 1 个获得
 
 ### 当前推荐实现路线
@@ -50,6 +50,7 @@
   - 领取时才把历史卡牌注册进当前 `RunState`，避免未选中的卡污染当前局状态
 - 药水：
   - 直接复用 `PotionReward`
+  - 当前阶段以普通奖励列表展示，不使用 `LinkedRewardSet`，因此不会限制为只能拿 1 瓶
 - 遗物：
   - 直接复用 `RelicReward`
 
@@ -65,6 +66,7 @@
 - 2026-04-19：已验证 `dotnet build C:\Dev\sts2mod\item-legacy\ItemLegacy.csproj` 可成功构建，输出 DLL 为 `C:\Dev\sts2mod\item-legacy\.godot\mono\temp\bin\Debug\ItemLegacy.dll`。
 - 2026-04-19：已改为使用 `LinkedRewardSet` 承载三类遗产，当前实现为“卡牌三选一 / 药水三选一 / 遗物三选一”，不再错误地把整组奖励全部领走。
 - 2026-04-19：药水遗产阶段已改为复用原版 `PotionReward`，当前药水栏已满时不会自动跳过，但该阶段允许玩家按原版奖励页逻辑直接跳过，不额外弹出替换药水选择。
+- 2026-04-26：药水遗产阶段改为普通奖励列表，上一局可继承药水都会展示并可逐个领取，不再用 `LinkedRewardSet` 限制为只能拿 1 瓶。
 - 2026-04-19：`LegacyRunClaimTracker` 直接读取原版 `RunState.MapPointHistory -> PlayerMapPointHistoryEntry.RestSiteChoices` 判断本局是否已领取遗产，不再写独立侧车状态文件；这样休息处内读档回滚时，遗产状态会与原版运行存档保持一致。
 - 2026-04-19：卡牌、药水、遗物三类遗产列表在进入奖励页前会先去重；当前策略为卡牌按 `SerializableCard` 完整相等去重，药水/遗物按模型 `Id` 去重。
 - 2026-04-19：三类遗产阶段全部允许跳过，不再对任一阶段禁用原版奖励页的 `Skip`。
@@ -90,4 +92,6 @@
 ## 命令
 
 - 构建：`dotnet build C:\Dev\sts2mod\item-legacy\ItemLegacy.csproj`
+- 部署：`pwsh -NoProfile -ExecutionPolicy Bypass -File C:\Dev\sts2mod\item-legacy\Deploy.ps1`
 - 配置文件：`C:\Dev\sts2mod\GameInstall\mods\ItemLegacy\ItemLegacy.cfg`
+- 更新日志：`C:\Dev\sts2mod\GameInstall\mods\ItemLegacy\更新日志.md`

@@ -19,5 +19,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="ItemLegacy.cfg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="更新日志.md" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

@@ -150,29 +150,29 @@ public static class LegacyHistoryService
             List<Reward> cardRewards = plan.Cards
                 .Select(save => (Reward)new LegacyCardReward(save, player))
                 .ToList();
-            await OfferRewardsAsync(player, cardRewards);
+            await OfferSingleChoiceRewardsAsync(player, cardRewards);
         }
 
         List<Reward> potionRewards = CreatePotionRewards(player, plan.Potions);
         if (potionRewards.Count > 0)
         {
-            await OfferRewardsAsync(player, potionRewards);
+            await OfferAllRewardsAsync(player, potionRewards);
         }
 
         List<Reward> relicRewards = CreateRelicRewards(player, plan.Relics);
         if (relicRewards.Count > 0)
         {
-            await OfferRewardsAsync(player, relicRewards);
+            await OfferSingleChoiceRewardsAsync(player, relicRewards);
         }
 
         if (plan.Gold > 0)
         {
-            await OfferRewardsAsync(player, new List<Reward> { new GoldReward(plan.Gold, player) });
+            await OfferAllRewardsAsync(player, new List<Reward> { new GoldReward(plan.Gold, player) });
         }
         return true;
     }
 
-    private static async Task OfferRewardsAsync(Player player, List<Reward> rewards)
+    private static async Task OfferSingleChoiceRewardsAsync(Player player, List<Reward> rewards)
     {
         if (rewards.Count == 0)
         {
@@ -181,15 +181,25 @@ public static class LegacyHistoryService
 
         if (rewards.Count == 1)
         {
-            await new RewardsSet(player)
-                .WithCustomRewards(rewards)
-                .Offer();
+            await OfferAllRewardsAsync(player, rewards);
             return;
         }
 
         LinkedRewardSet linkedRewardSet = new LinkedRewardSet(rewards, player);
         await new RewardsSet(player)
             .WithCustomRewards(new List<Reward> { linkedRewardSet })
+            .Offer();
+    }
+
+    private static async Task OfferAllRewardsAsync(Player player, List<Reward> rewards)
+    {
+        if (rewards.Count == 0)
+        {
+            return;
+        }
+
+        await new RewardsSet(player)
+            .WithCustomRewards(rewards)
             .Offer();
     }
 
