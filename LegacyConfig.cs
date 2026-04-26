@@ -164,7 +164,15 @@ public sealed class LegacyConfig
         [Relics]
 
         ## 允许继承的遗物种类，使用英文枚举名，多个值用英文逗号分隔。
-        ## 可用值：None, Starter, Common, Uncommon, Rare, Shop, Event, Ancient
+        ## 可用值：
+        ## None = 无稀有度
+        ## Starter = 初始
+        ## Common = 普通
+        ## Uncommon = 罕见
+        ## Rare = 稀有
+        ## Shop = 商店
+        ## Event = 事件
+        ## Ancient = 远古
         ## 也可以填 All 允许所有种类。
         # Setting type: String
         # Default value: Common, Uncommon, Rare, Shop
