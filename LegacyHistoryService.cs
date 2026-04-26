@@ -29,7 +29,16 @@ public static class LegacyHistoryService
 
         public required IReadOnlyList<SerializableRelic> Relics { get; init; }
 
+        public int Gold { get; init; }
+
         public required string DescriptionText { get; init; }
+    }
+
+    private sealed class HistorySnapshot
+    {
+        public required RunHistoryPlayer Player { get; init; }
+
+        public required int CurrentGold { get; init; }
     }
 
     public static bool TryGetOptionState(Player player, out bool isEnabled, out string descriptionText)
@@ -85,20 +94,28 @@ public static class LegacyHistoryService
         plan = null;
         disabledReason = "没有可用的上一局历史记录。";
 
-        if (!TryLoadLatestHistory(player, out RunHistoryPlayer? historyPlayer) || historyPlayer == null)
+        LegacyConfig config = LegacyConfig.Current;
+        if (!TryLoadLatestHistory(player, out HistorySnapshot? historySnapshot) || historySnapshot == null)
         {
             return false;
         }
 
-        List<SerializableCard> cards = DistinctCards(historyPlayer.Deck);
-        List<SerializablePotion> potions = DistinctPotions(historyPlayer.Potions)
-            .Where(potion => IsAvailablePotion(player, potion))
-            .ToList();
-        List<SerializableRelic> relics = DistinctRelics(historyPlayer.Relics)
-            .Where(relic => IsAvailableLegacyRelic(player, relic))
-            .ToList();
+        List<SerializableCard> cards = config.CardsEnabled
+            ? DistinctCards(historySnapshot.Player.Deck)
+            : new List<SerializableCard>();
+        List<SerializablePotion> potions = config.PotionsEnabled
+            ? DistinctPotions(historySnapshot.Player.Potions)
+                .Where(potion => IsAvailablePotion(player, potion))
+                .ToList()
+            : new List<SerializablePotion>();
+        List<SerializableRelic> relics = config.RelicsEnabled
+            ? DistinctRelics(historySnapshot.Player.Relics)
+                .Where(relic => IsAvailableLegacyRelic(player, relic))
+                .ToList()
+            : new List<SerializableRelic>();
+        int gold = config.GoldEnabled ? Math.Max(0, historySnapshot.CurrentGold) : 0;
 
-        if (relics.Count <= 0 && potions.Count <= 0 && cards.Count <= 0)
+        if (relics.Count <= 0 && potions.Count <= 0 && cards.Count <= 0 && gold <= 0)
         {
             disabledReason = "上一局没有可领取的遗产。";
             return false;
@@ -109,7 +126,8 @@ public static class LegacyHistoryService
             Relics = relics,
             Potions = potions,
             Cards = cards,
-            DescriptionText = $"依次从上一局结束时保留的卡牌、药水、遗物中各选一个获得。当前可选：卡牌 {cards.Count}，药水 {potions.Count}，遗物 {relics.Count}。"
+            Gold = gold,
+            DescriptionText = $"依次从上一局结束时保留的卡牌、药水、遗物、金币中领取遗产。当前可选：卡牌 {cards.Count}，药水 {potions.Count}，遗物 {relics.Count}，金币 {gold}。"
         };
         disabledReason = string.Empty;
         return true;
@@ -145,6 +163,11 @@ public static class LegacyHistoryService
         if (relicRewards.Count > 0)
         {
             await OfferRewardsAsync(player, relicRewards);
+        }
+
+        if (plan.Gold > 0)
+        {
+            await OfferRewardsAsync(player, new List<Reward> { new GoldReward(plan.Gold, player) });
         }
         return true;
     }
@@ -227,9 +250,9 @@ public static class LegacyHistoryService
         return LegacyConfig.Current.InheritableRelicRarities.Contains(relic.Rarity);
     }
 
-    private static bool TryLoadLatestHistory(Player currentPlayer, out RunHistoryPlayer? historyPlayer)
+    private static bool TryLoadLatestHistory(Player currentPlayer, out HistorySnapshot? historySnapshot)
     {
-        historyPlayer = null;
+        historySnapshot = null;
         List<string> historyNames = SaveManager.Instance.GetAllRunHistoryNames()
             .OrderByDescending(ParseHistoryStartTime)
             .ToList();
@@ -250,9 +273,14 @@ public static class LegacyHistoryService
                 continue;
             }
 
-            historyPlayer = SelectHistoryPlayer(history, currentPlayer);
+            RunHistoryPlayer? historyPlayer = SelectHistoryPlayer(history, currentPlayer);
             if (historyPlayer != null)
             {
+                historySnapshot = new HistorySnapshot
+                {
+                    Player = historyPlayer,
+                    CurrentGold = GetLatestCurrentGold(history, historyPlayer.Id),
+                };
                 return true;
             }
         }
@@ -266,6 +294,16 @@ public static class LegacyHistoryService
         return history.Players.FirstOrDefault(player => player.Id == localPlayerId)
             ?? history.Players.FirstOrDefault(player => player.Character == currentPlayer.Character.Id)
             ?? history.Players.FirstOrDefault();
+    }
+
+    private static int GetLatestCurrentGold(RunHistory history, ulong playerId)
+    {
+        return history.MapPointHistory
+            .SelectMany(static actEntries => actEntries)
+            .SelectMany(static mapEntry => mapEntry.PlayerStats)
+            .Where(entry => entry.PlayerId == playerId)
+            .Select(entry => entry.CurrentGold)
+            .LastOrDefault();
     }
 
     private static long ParseHistoryStartTime(string historyName)

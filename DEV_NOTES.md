@@ -61,7 +61,7 @@
 - 2026-04-19：已确认 `RelicReward`、`PotionReward` 支持传入指定模型，适合直接承载上一局遗物/药水选择。
 - 2026-04-19：已确认直接复用 `SpecialCardReward` 会让未选中的历史卡牌提前进入当前 `RunState`；当前版本已改为自定义 `LegacyCardReward`，只在真正领取时注册卡牌。
 - 2026-04-25：main 分支卡牌遗产保持只按上一局历史中的卡牌 `Id` 继承基础版卡牌，不继承升级等级和附魔状态；同名卡候选仍按 `Id` 去重。
-- 2026-04-26：新增 `ItemLegacy.cfg` 配置文件，可通过 `[Cards] InheritUpgradesAndEnchantments` 切换卡牌遗产是否继承升级和附魔；默认 `false`，保持 main 行为。
+- 2026-04-26：`ItemLegacy.cfg` 支持 `[Cards] Enabled` 控制卡牌遗产是否启用，`InheritUpgrades` 控制是否继承升级，`InheritEnchantments` 控制是否继承附魔；默认启用卡牌，但不继承升级和附魔，保持 main 行为。只开启升级时不会保留历史卡牌 `Props`，避免把非升级状态一起带入；开启附魔时会保留附魔和相关保存属性。历史卡牌的 `FloorAddedToDeck` 不继承，当前局获得楼层仍交给原版 `CardPileCmd.Add` 写入。
 - 2026-04-19：已验证 `dotnet build C:\Dev\sts2mod\item-legacy\ItemLegacy.csproj` 可成功构建，输出 DLL 为 `C:\Dev\sts2mod\item-legacy\.godot\mono\temp\bin\Debug\ItemLegacy.dll`。
 - 2026-04-19：已改为使用 `LinkedRewardSet` 承载三类遗产，当前实现为“卡牌三选一 / 药水三选一 / 遗物三选一”，不再错误地把整组奖励全部领走。
 - 2026-04-19：药水遗产阶段已改为复用原版 `PotionReward`，当前药水栏已满时不会自动跳过，但该阶段允许玩家按原版奖励页逻辑直接跳过，不额外弹出替换药水选择。
@@ -72,7 +72,9 @@
 - 2026-04-19：当某类遗产去重后只剩 1 个选项时，当前版本不再使用 `LinkedRewardSet`，直接用普通奖励页展示该单项。
 - 2026-04-19：已确认休息处选项是否会消耗本次休息处，取决于 `RestSiteOption.OnSelect()` 是否返回 `true`；当前版本已将“完成遗产流程”与“实际拿到物品”解耦，只要进入遗产流程并正常结束，即视为本次休息处已消费，并由原版 `RestSiteChoices` 记录“本局已领取遗产”状态。
 - 2026-04-25：main 分支遗物遗产保持只允许继承 `Common`、`Uncommon`、`Rare`、`Shop` 四类遗物，排除初始、远古、事件和无稀有度遗物。
-- 2026-04-26：遗物遗产配置改为 `[Relics] InheritableRarities`，可用英文逗号分隔枚举名精确配置可继承种类；默认 `Common, Uncommon, Rare, Shop`，也支持 `All`。
+- 2026-04-26：遗物遗产配置支持 `[Relics] Enabled` 控制是否启用，`InheritableRarities` 用英文逗号分隔枚举名精确配置可继承种类；默认 `Common, Uncommon, Rare, Shop`，也支持 `All`。
+- 2026-04-26：新增 `[Potions] Enabled` 控制药水遗产是否启用，默认 `true`。
+- 2026-04-26：新增 `[Gold] Enabled` 控制金币遗产是否启用；金币数从上一局 `RunHistory.MapPointHistory` 中对应玩家最后一次 `CurrentGold` 读取，默认 `false`。
 - 2026-04-25：多人局遗产流程已改为“仅本地玩家客户端生成自己的遗产候选，并继续复用原版 `RewardSynchronizer` 同步领取/跳过结果”；非本地玩家对应的 `LegacyRestSiteOption` 不再读取本机历史记录，避免把别人的遗产候选错误地按本机历史重算。
 
 ## 限制/坑点

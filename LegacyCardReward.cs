@@ -53,9 +53,20 @@ public sealed class LegacyCardReward : Reward
             throw new System.InvalidOperationException("Legacy card reward received a card without Id.");
         }
 
-        _card = LegacyConfig.Current.InheritCardUpgradesAndEnchantments
-            ? CardModel.FromSerializable(save)
-            : SaveUtil.CardOrDeprecated(save.Id).ToMutable();
+        LegacyConfig config = LegacyConfig.Current;
+        if (!config.InheritCardUpgrades && !config.InheritCardEnchantments)
+        {
+            _card = SaveUtil.CardOrDeprecated(save.Id).ToMutable();
+            return;
+        }
+
+        _card = CardModel.FromSerializable(new SerializableCard
+        {
+            Id = save.Id,
+            CurrentUpgradeLevel = config.InheritCardUpgrades ? save.CurrentUpgradeLevel : 0,
+            Enchantment = config.InheritCardEnchantments ? save.Enchantment : null,
+            Props = config.InheritCardEnchantments ? save.Props : null,
+        });
     }
 
     public override Task Populate()

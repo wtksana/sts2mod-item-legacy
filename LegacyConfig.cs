@@ -14,9 +14,19 @@ public sealed class LegacyConfig
 
     private static readonly Lazy<LegacyConfig> LazyCurrent = new(Load);
 
-    public bool InheritCardUpgradesAndEnchantments { get; init; }
+    public bool CardsEnabled { get; init; } = true;
+
+    public bool InheritCardUpgrades { get; init; }
+
+    public bool InheritCardEnchantments { get; init; }
+
+    public bool PotionsEnabled { get; init; } = true;
+
+    public bool RelicsEnabled { get; init; } = true;
 
     public IReadOnlySet<RelicRarity> InheritableRelicRarities { get; init; } = DefaultRelicRarities;
+
+    public bool GoldEnabled { get; init; }
 
     public static LegacyConfig Current => LazyCurrent.Value;
 
@@ -35,8 +45,13 @@ public sealed class LegacyConfig
             Dictionary<string, string> values = ReadValues(path);
             return new LegacyConfig
             {
-                InheritCardUpgradesAndEnchantments = GetBool(values, "Cards.InheritUpgradesAndEnchantments"),
+                CardsEnabled = GetBool(values, "Cards.Enabled", defaultValue: true),
+                InheritCardUpgrades = GetBool(values, "Cards.InheritUpgrades"),
+                InheritCardEnchantments = GetBool(values, "Cards.InheritEnchantments"),
+                PotionsEnabled = GetBool(values, "Potions.Enabled", defaultValue: true),
+                RelicsEnabled = GetBool(values, "Relics.Enabled", defaultValue: true),
                 InheritableRelicRarities = GetRelicRarities(values, "Relics.InheritableRarities"),
+                GoldEnabled = GetBool(values, "Gold.Enabled"),
             };
         }
         catch (Exception ex)
@@ -80,11 +95,11 @@ public sealed class LegacyConfig
         return values;
     }
 
-    private static bool GetBool(Dictionary<string, string> values, string key)
+    private static bool GetBool(Dictionary<string, string> values, string key, bool defaultValue = false)
     {
         if (!values.TryGetValue(key, out string? value))
         {
-            return false;
+            return defaultValue;
         }
 
         if (bool.TryParse(value, out bool result))
@@ -154,14 +169,38 @@ public sealed class LegacyConfig
 
         [Cards]
 
+        ## 是否启用卡牌遗产。
+        # Setting type: Boolean
+        # Default value: true
+        Enabled = true
+
         ## 卡牌遗产是否继承上一局的升级和附魔。
-        ## false：只继承同名基础版卡牌。
-        ## true：继承升级等级、附魔和保存属性。
+        ## false：继承同名未升级卡牌。
+        ## true：保留上一局卡牌升级等级。
         # Setting type: Boolean
         # Default value: false
-        InheritUpgradesAndEnchantments = false
+        InheritUpgrades = false
+
+        ## 卡牌遗产是否继承上一局的附魔。
+        ## false：不继承附魔。
+        ## true：保留上一局卡牌附魔和附魔保存属性。
+        # Setting type: Boolean
+        # Default value: false
+        InheritEnchantments = false
+
+        [Potions]
+
+        ## 是否启用药水遗产。
+        # Setting type: Boolean
+        # Default value: true
+        Enabled = true
 
         [Relics]
+
+        ## 是否启用遗物遗产。
+        # Setting type: Boolean
+        # Default value: true
+        Enabled = true
 
         ## 允许继承的遗物种类，使用英文枚举名，多个值用英文逗号分隔。
         ## 可用值：
@@ -177,6 +216,14 @@ public sealed class LegacyConfig
         # Setting type: String
         # Default value: Common, Uncommon, Rare, Shop
         InheritableRarities = Common, Uncommon, Rare, Shop
+
+        [Gold]
+
+        ## 是否启用金币遗产。
+        ## true 时会把上一局结束保留的金币作为一个可跳过奖励。
+        # Setting type: Boolean
+        # Default value: false
+        Enabled = false
         """;
 
     private static readonly IReadOnlySet<RelicRarity> DefaultRelicRarities = new HashSet<RelicRarity>
