@@ -72,7 +72,7 @@
 - 2026-04-19：当某类遗产去重后只剩 1 个选项时，当前版本不再使用 `LinkedRewardSet`，直接用普通奖励页展示该单项。
 - 2026-04-19：已确认休息处选项是否会消耗本次休息处，取决于 `RestSiteOption.OnSelect()` 是否返回 `true`；当前版本已将“完成遗产流程”与“实际拿到物品”解耦，只要进入遗产流程并正常结束，即视为本次休息处已消费，并由原版 `RestSiteChoices` 记录“本局已领取遗产”状态。
 - 2026-04-25：main 分支遗物遗产保持只允许继承 `Common`、`Uncommon`、`Rare`、`Shop` 四类遗物，排除初始、远古、事件和无稀有度遗物。
-- 2026-04-26：新增 `[Relics] InheritAllRarities` 配置项，可切换遗物遗产是否允许所有稀有度；默认 `false`，保持 main 行为。
+- 2026-04-26：遗物遗产配置改为 `[Relics] InheritableRarities`，可用英文逗号分隔枚举名精确配置可继承种类；默认 `Common, Uncommon, Rare, Shop`，也支持 `All`。
 - 2026-04-25：多人局遗产流程已改为“仅本地玩家客户端生成自己的遗产候选，并继续复用原版 `RewardSynchronizer` 同步领取/跳过结果”；非本地玩家对应的 `LegacyRestSiteOption` 不再读取本机历史记录，避免把别人的遗产候选错误地按本机历史重算。
 
 ## 限制/坑点

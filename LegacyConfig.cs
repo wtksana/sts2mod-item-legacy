@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
+using MegaCrit.Sts2.Core.Entities.Relics;
 using MegaCrit.Sts2.Core.Logging;
 
 namespace ItemLegacy;
@@ -14,7 +16,7 @@ public sealed class LegacyConfig
 
     public bool InheritCardUpgradesAndEnchantments { get; init; }
 
-    public bool InheritAllRelicRarities { get; init; }
+    public IReadOnlySet<RelicRarity> InheritableRelicRarities { get; init; } = DefaultRelicRarities;
 
     public static LegacyConfig Current => LazyCurrent.Value;
 
@@ -34,7 +36,7 @@ public sealed class LegacyConfig
             return new LegacyConfig
             {
                 InheritCardUpgradesAndEnchantments = GetBool(values, "Cards.InheritUpgradesAndEnchantments"),
-                InheritAllRelicRarities = GetBool(values, "Relics.InheritAllRarities"),
+                InheritableRelicRarities = GetRelicRarities(values, "Relics.InheritableRarities"),
             };
         }
         catch (Exception ex)
@@ -93,6 +95,37 @@ public sealed class LegacyConfig
         return value is "1" or "yes" or "Yes" or "YES" or "on" or "On" or "ON";
     }
 
+    private static IReadOnlySet<RelicRarity> GetRelicRarities(Dictionary<string, string> values, string key)
+    {
+        if (!values.TryGetValue(key, out string? value) || string.IsNullOrWhiteSpace(value))
+        {
+            return DefaultRelicRarities;
+        }
+
+        string[] entries = value
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        if (entries.Any(static entry => string.Equals(entry, "All", StringComparison.OrdinalIgnoreCase)))
+        {
+            return Enum.GetValues<RelicRarity>().ToHashSet();
+        }
+
+        HashSet<RelicRarity> rarities = new();
+        foreach (string entry in entries)
+        {
+            if (Enum.TryParse(entry, ignoreCase: true, out RelicRarity rarity))
+            {
+                rarities.Add(rarity);
+            }
+            else
+            {
+                Log.Warn($"ItemLegacy ignored unknown relic rarity in config: {entry}");
+            }
+        }
+
+        return rarities.Count > 0 ? rarities : DefaultRelicRarities;
+    }
+
     private static void SaveDefault(string path)
     {
         string? directory = Path.GetDirectoryName(path);
@@ -130,11 +163,19 @@ public sealed class LegacyConfig
 
         [Relics]
 
-        ## 遗物遗产是否允许继承所有种类的遗物。
-        ## false：只继承普通、罕见、稀有、商店遗物。
-        ## true：允许上一局历史中的所有遗物种类进入候选。
-        # Setting type: Boolean
-        # Default value: false
-        InheritAllRarities = false
+        ## 允许继承的遗物种类，使用英文枚举名，多个值用英文逗号分隔。
+        ## 可用值：None, Starter, Common, Uncommon, Rare, Shop, Event, Ancient
+        ## 也可以填 All 允许所有种类。
+        # Setting type: String
+        # Default value: Common, Uncommon, Rare, Shop
+        InheritableRarities = Common, Uncommon, Rare, Shop
         """;
+
+    private static readonly IReadOnlySet<RelicRarity> DefaultRelicRarities = new HashSet<RelicRarity>
+    {
+        RelicRarity.Common,
+        RelicRarity.Uncommon,
+        RelicRarity.Rare,
+        RelicRarity.Shop,
+    };
 }

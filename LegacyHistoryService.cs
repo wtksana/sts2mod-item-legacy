@@ -224,15 +224,7 @@ public static class LegacyHistoryService
 
     private static bool IsLegacyRelicRarityAllowed(RelicModel relic)
     {
-        if (LegacyConfig.Current.InheritAllRelicRarities)
-        {
-            return true;
-        }
-
-        return relic.Rarity is RelicRarity.Common
-            or RelicRarity.Uncommon
-            or RelicRarity.Rare
-            or RelicRarity.Shop;
+        return LegacyConfig.Current.InheritableRelicRarities.Contains(relic.Rarity);
     }
 
     private static bool TryLoadLatestHistory(Player currentPlayer, out RunHistoryPlayer? historyPlayer)
