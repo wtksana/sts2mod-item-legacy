@@ -53,7 +53,9 @@ public sealed class LegacyCardReward : Reward
             throw new System.InvalidOperationException("Legacy card reward received a card without Id.");
         }
 
-        _card = SaveUtil.CardOrDeprecated(save.Id).ToMutable();
+        _card = LegacyConfig.Current.InheritCardUpgradesAndEnchantments
+            ? CardModel.FromSerializable(save)
+            : SaveUtil.CardOrDeprecated(save.Id).ToMutable();
     }
 
     public override Task Populate()

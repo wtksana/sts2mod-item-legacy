@@ -195,7 +195,7 @@ public static class LegacyHistoryService
     private static bool IsAvailableLegacyRelic(Player player, SerializableRelic relic)
     {
         RelicModel model = RelicModel.FromSerializable(relic);
-        return IsLegacyRelicRarity(model) && model.IsAllowed(player.RunState);
+        return IsLegacyRelicRarityAllowed(model) && model.IsAllowed(player.RunState);
     }
 
     private static List<SerializableCard> DistinctCards(IEnumerable<SerializableCard> cards)
@@ -222,8 +222,13 @@ public static class LegacyHistoryService
             .ToList();
     }
 
-    private static bool IsLegacyRelicRarity(RelicModel relic)
+    private static bool IsLegacyRelicRarityAllowed(RelicModel relic)
     {
+        if (LegacyConfig.Current.InheritAllRelicRarities)
+        {
+            return true;
+        }
+
         return relic.Rarity is RelicRarity.Common
             or RelicRarity.Uncommon
             or RelicRarity.Rare

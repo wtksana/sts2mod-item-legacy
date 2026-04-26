@@ -17,4 +17,7 @@
       <Private>false</Private>
     </Reference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="ItemLegacy.config" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>
