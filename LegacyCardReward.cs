@@ -69,9 +69,8 @@ public sealed class LegacyCardReward : Reward
         });
     }
 
-    public override Task Populate()
+    public override void Populate()
     {
-        return Task.CompletedTask;
     }
 
     protected override async Task<bool> OnSelect()

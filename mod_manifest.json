@@ -3,7 +3,7 @@
   "name": "Item Legacy",
   "author": "Codex",
   "description": "在休息点新增遗产入口，可按配置从上一局结束状态继承卡牌、药水、遗物和金币。",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "has_pck": false,
   "has_dll": true
 }

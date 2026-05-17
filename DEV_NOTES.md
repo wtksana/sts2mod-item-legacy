@@ -56,6 +56,9 @@
 
 ## 已验证
 
+- 2026-05-18：游戏 2026-05-17 版本将原版奖励同步流程重构为 `RewardsSetSynchronizer` 驱动，`RewardsSet.Offer()` 通过 `BeginRewardsSet` 拿到 `Task` 后由同步器在 `AllRewardsSuccessfullySelected` 时完成；`NRewardButton.GetReward` 改走 `RewardsSetSynchronizer.SelectLocalReward`；`Reward.Populate` 由 `Task` 改为 `void`。当前版本：`LegacyCardReward.Populate` 改为 `void` 空实现；卡牌/遗物的链式奖励组改用 `LegacyLinkedRewardSet : LinkedRewardSet`，在子奖励成功领取后通过反射把容器自身的 `Reward.SuccessfullySelected` 设为 true，从而让外层 `RewardsSet` 可以被同步器自然完成。
+- 2026-05-18：新版 `NLinkedRewardSet.Reload` 把 1 参的 `RewardClaimed` 信号用无参 `Callable.From(GetReward)` 接，触发时 Godot 抛 `ArgCountMismatch` 把 callable 吞掉，导致链式奖励组的 `GetReward` → `_rewardsScreen.RewardCollectedFrom` 永不触发，UI 容器无法关闭、新一段 `Offer()` 直接叠新窗口。表现为「全部继承完后又冒出一个不能跳过、点物品也不会获得的窗口」。修复：复活 `LegacyLinkedRewardSetReloadPatch`，Prefix 重写 Reload，把 callable 改成 1 参 lambda 重新接信号；`OnLinkedRewardClaimed` 内部仍调 `LinkedRewardSet.OnSkipped()` 以写入未选兄弟奖励的 `wasPicked=false` 历史记录。
+- 2026-05-18：`NRewardButton.GetReward` 在新版会调用 `RewardsSetSynchronizer.SelectLocalReward(reward)`，由于子奖励不在顶层 `RewardsSet.Rewards` 中，本地会发出 `rewardIndex=-1` 的 `RewardSelectedMessage`。远端因为 mod 跳过了 `Offer()`，对应玩家槽位的 `nextId` 一直为 0，消息会被塞进 buffer 但永远不被消费，实际无副作用，仅有少量挂起消息累积。
 - 2026-04-19：已确认 `RunHistory` 中直接保存了上一局结束时的 `deck`、`potions`、`relics`，不需要额外从“历史记录 UI”反向抓取显示节点。
 - 2026-04-19：已确认 `SaveManager.Instance.GetAllRunHistoryNames()` + `LoadRunHistory(...)` 可以直接读取历史局存档，文件名使用 `StartTime.run`。
 - 2026-04-19：已确认原版 `RewardsSet.WithCustomRewards(...).Offer()` 可直接复用原版奖励页。

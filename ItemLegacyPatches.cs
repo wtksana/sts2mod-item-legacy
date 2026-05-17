@@ -161,6 +161,10 @@ public static class LegacyRestSiteButtonRefreshTextStatePatch
     }
 }
 
+// 新版游戏 NLinkedRewardSet.Reload 把 RewardClaimed (1 参) 信号用 Callable.From(无参) 接,
+// 触发时 Godot 抛 ArgCountMismatch 把 callable 吞掉,导致 NLinkedRewardSet.GetReward 不被调,
+// 链式奖励组的 UI 永远不会通过 _rewardsScreen.RewardCollectedFrom 被关闭,从而留下「不能跳过、点也无效」的残留窗口。
+// 这里 Prefix 重写 Reload,用 1 参 callable 重新接信号修复这条链路。
 [HarmonyPatch(typeof(NLinkedRewardSet), "Reload")]
 public static class LegacyLinkedRewardSetReloadPatch
 {

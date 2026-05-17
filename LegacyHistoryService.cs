@@ -185,7 +185,7 @@ public static class LegacyHistoryService
             return;
         }
 
-        LinkedRewardSet linkedRewardSet = new LinkedRewardSet(rewards, player);
+        LegacyLinkedRewardSet linkedRewardSet = new LegacyLinkedRewardSet(rewards, player);
         await new RewardsSet(player)
             .WithCustomRewards(new List<Reward> { linkedRewardSet })
             .Offer();
