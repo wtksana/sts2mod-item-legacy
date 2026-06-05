@@ -135,7 +135,7 @@ public static class LegacyHistoryService
 
     private static bool ShouldResolvePlanLocally(Player player)
     {
-        if (RunManager.Instance.IsSinglePlayerOrFakeMultiplayer)
+        if (RunManager.Instance.IsSingleplayerOrFakeMultiplayer)
         {
             return true;
         }

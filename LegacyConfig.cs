@@ -118,7 +118,7 @@ public sealed class LegacyConfig
         }
 
         string[] entries = value
-            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            .Split(new[] { ',', '，' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
         if (entries.Any(static entry => string.Equals(entry, "All", StringComparison.OrdinalIgnoreCase)))
         {

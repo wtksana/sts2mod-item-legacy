@@ -77,7 +77,7 @@ Enabled = false
 - `ItemLegacy.json`
 - `ItemLegacy.dll`
 - `ItemLegacy.cfg`
-- `更新日志.md`
+- `更新日志.txt`
 
 示例结构：
 
@@ -88,21 +88,27 @@ Slay the Spire 2/
         |-- ItemLegacy.json
         |-- ItemLegacy.dll
         |-- ItemLegacy.cfg
-        `-- 更新日志.md
+        `-- 更新日志.txt
 ```
 
 ## 构建
 
-本项目依赖游戏安装目录中的 `sts2.dll` 和 `0Harmony.dll`。当前工程默认从仓库同级的 `GameInstall/data_sts2_windows_x86_64` 引用这些程序集。
+本项目依赖游戏安装目录中的 `sts2.dll` 和 `0Harmony.dll`。当前工程默认从 `C:\Programs\Steam\steamapps\common\Slay the Spire 2\data_sts2_windows_x86_64` 引用这些程序集。
 
 ```powershell
-dotnet build C:\Dev\sts2mod\item-legacy\ItemLegacy.csproj
+dotnet build .\ItemLegacy.csproj
+```
+
+如需使用其他游戏安装目录，可通过 MSBuild 属性覆盖：
+
+```powershell
+dotnet build .\ItemLegacy.csproj -p:GameInstallDir="D:\SteamLibrary\steamapps\common\Slay the Spire 2"
 ```
 
 构建产物默认输出到：
 
 ```text
-C:\Dev\sts2mod\item-legacy\.godot\mono\temp\bin\Debug\ItemLegacy.dll
+C:\Dev\sts2mod-item-legacy\.godot\mono\temp\bin\Debug\ItemLegacy.dll
 ```
 
 ## 部署到本地测试目录
@@ -110,20 +116,21 @@ C:\Dev\sts2mod\item-legacy\.godot\mono\temp\bin\Debug\ItemLegacy.dll
 仓库提供了本地部署脚本：
 
 ```powershell
-pwsh -NoProfile -ExecutionPolicy Bypass -File C:\Dev\sts2mod\item-legacy\Deploy.ps1
+pwsh -NoProfile -ExecutionPolicy Bypass -File .\Deploy.ps1
 ```
 
 默认复制到：
 
 ```text
-C:\Dev\sts2mod\GameInstall\mods\ItemLegacy
+C:\Programs\Steam\steamapps\common\Slay the Spire 2\mods\ItemLegacy
 ```
 
 脚本会复制：
 
 - `ItemLegacy.dll`
+- `ItemLegacy.json`
 - `ItemLegacy.cfg`
-- `更新日志.md`
+- `更新日志.txt`
 
 ## 多人游戏
 
@@ -133,4 +140,4 @@ C:\Dev\sts2mod\GameInstall\mods\ItemLegacy
 
 ## 更新日志
 
-见 [更新日志.md](更新日志.md)。
+见 [更新日志.txt](更新日志.txt)。

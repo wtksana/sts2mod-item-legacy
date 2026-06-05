@@ -13,6 +13,9 @@ obj/
 .vscode/
 .idea/
 
+# 本地反编译参考代码
+/decompiled/
+
 # 系统临时文件
 *.tmp
 *.temp

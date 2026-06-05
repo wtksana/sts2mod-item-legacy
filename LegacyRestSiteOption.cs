@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using MegaCrit.Sts2.Core.Entities.Players;
 using MegaCrit.Sts2.Core.Entities.RestSite;
@@ -16,6 +17,10 @@ public sealed class LegacyRestSiteOption : RestSiteOption
     public override string OptionId => LegacyOptionId;
 
     public override LocString Description => new("rest_site_ui", "PROMPT");
+
+    public override bool IsEnabled { get; }
+
+    public override IEnumerable<string> AssetPaths => new[] { FallbackIconPath };
 
     public string DisplayDescription { get; }
 

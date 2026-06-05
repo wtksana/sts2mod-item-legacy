@@ -7,18 +7,27 @@
     <EnableDynamicLoading>true</EnableDynamicLoading>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+  <PropertyGroup>
+    <GameInstallDir Condition="'$(GameInstallDir)' == ''">C:\Programs\Steam\steamapps\common\Slay the Spire 2</GameInstallDir>
+    <GameDataDir>$(GameInstallDir)\data_sts2_windows_x86_64</GameDataDir>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="decompiled\**\*.cs" />
+    <EmbeddedResource Remove="decompiled\**\*" />
+    <None Remove="decompiled\**\*" />
+  </ItemGroup>
   <ItemGroup>
     <Reference Include="sts2">
-      <HintPath>..\GameInstall\data_sts2_windows_x86_64\sts2.dll</HintPath>
+      <HintPath>$(GameDataDir)\sts2.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="0Harmony">
-      <HintPath>..\GameInstall\data_sts2_windows_x86_64\0Harmony.dll</HintPath>
+      <HintPath>$(GameDataDir)\0Harmony.dll</HintPath>
       <Private>false</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
     <None Include="ItemLegacy.cfg" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="更新日志.md" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="更新日志.txt" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

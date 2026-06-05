@@ -86,15 +86,17 @@
 
 - 2026-04-19：`CardReward` 的原版选卡界面不适合直接展示整副上一局牌组，因为选项过多时会严重超出横向布局；当前版本改为把卡牌遗产也放到原版奖励页中滚动选择。
 - 2026-04-19：当前休息点 `遗产` 按钮暂时复用 `smith` 图标兜底，后续如果补正式资源可移除这层补丁。
-- 2026-04-19：当前构建依赖读取 `C:\Users\ttat\AppData\Roaming\NuGet\NuGet.Config`；在本工作区内直接执行 `dotnet build` 可能因权限不足失败，需要提权运行。
+- 2026-06-06：重启终端后 `dotnet` 已加入 PATH，当前 SDK 为 `10.0.300`。
 - 2026-04-19：为了与原版休息/锻造语义一致，遗产流程即使三段都 `Skip`，也必须返回成功；否则 `RestSiteSynchronizer` 不会清空后续休息处选项，也不会把本局遗产写入原版 `RestSiteChoices`。
 - 2026-04-19：如果把“遗产已领取”额外写到独立文件，会出现休息处内 SL 后“奖励回档但遗产锁定未回档”的状态撕裂；当前版本已移除这条实现路线。
 - 2026-04-25：原版联机会在入房阶段校验 `ModManager.GetGameplayRelevantModNameList()`；`item-legacy` 当前 `affects_gameplay=true`，因此“有人装 mod、有人没装 mod”正常情况下会直接触发 `ModMismatch`，不能作为兼容目标。
-- 2026-04-26：配置文件使用类 BepInEx 的 `ItemLegacy.cfg`，带注释、分组和默认值说明；不使用 `*.json`，因为游戏原版 `ModManager` 会递归读取 mod 目录下所有 `*.json` 并尝试当作 manifest 解析。
+- 2026-04-26：配置文件使用类 BepInEx 的 `ItemLegacy.cfg`，带注释、分组和默认值说明；不使用额外的 `*.json` 配置文件，因为游戏原版 `ModManager` 会递归读取 mod 目录下所有 `*.json` 并尝试当作 manifest 解析。
+- 2026-06-06：当前测试游戏为 `v0.107.0`，commit `23d60b98`，date `2026-06-04T18:40:52-04:00`；API 兼容性需以重新构建结果为准。
 
 ## 命令
 
-- 构建：`dotnet build C:\Dev\sts2mod\item-legacy\ItemLegacy.csproj`
-- 部署：`pwsh -NoProfile -ExecutionPolicy Bypass -File C:\Dev\sts2mod\item-legacy\Deploy.ps1`
-- 配置文件：`C:\Dev\sts2mod\GameInstall\mods\ItemLegacy\ItemLegacy.cfg`
-- 更新日志：`C:\Dev\sts2mod\GameInstall\mods\ItemLegacy\更新日志.md`
+- 构建：`dotnet build .\ItemLegacy.csproj`
+- 指定其他游戏目录构建：`dotnet build .\ItemLegacy.csproj -p:GameInstallDir="D:\SteamLibrary\steamapps\common\Slay the Spire 2"`
+- 部署：`pwsh -NoProfile -ExecutionPolicy Bypass -File .\Deploy.ps1`
+- 配置文件：`C:\Programs\Steam\steamapps\common\Slay the Spire 2\mods\ItemLegacy\ItemLegacy.cfg`
+- 更新日志：`C:\Programs\Steam\steamapps\common\Slay the Spire 2\mods\ItemLegacy\更新日志.txt`
